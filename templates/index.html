@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Scraper</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <style>
+      .no-bullets {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="form-container">
+        <h1>Simple Web Scraper</h1>
+        <form method="POST">
+          <div class="input-group">
+            <label for="website_url">Website URL:</label>
+            <input
+              type="text"
+              id="website_url"
+              name="website_url"
+              placeholder="Enter website URL"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <label for="frequency">Frequency (minutes):</label>
+            <input
+              type="number"
+              id="frequency"
+              name="frequency"
+              placeholder="e.g. 5"
+              min="1"
+              required
+            />
+          </div>
+          <button type="submit">Scrape</button>
+        </form>
+      </div>
+
+      <div class="results-container">
+        {% if data %}
+        <h2>Scraped Data</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Headlines</th>
+              <th>Paragraphs</th>
+              <th>Links</th>
+              <th>Images</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <a href="{{ data.url }}" target="_blank">
+                  {{ data.url.split('//')[-1].split('/')[0] }}
+                </a>
+              </td>
+              <td>
+                <div class="no-bullets">
+                  {% for headline in data.headlines %}
+                  <p>{{ headline }}</p>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>
+                <div class="no-bullets">
+                  {% for paragraph in data.paragraphs %}
+                  <p>{{ paragraph }}</p>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>
+                <div class="no-bullets">
+                  {% for link in data.links %}
+                  <p>
+                    <a href="{{ link }}" target="_blank">
+                      {{ link.split('//')[-1].split('/')[0] }}
+                    </a>
+                  </p>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>
+                <div class="no-bullets">
+                  {% for img in data.images %}
+                  <p><img src="{{ img }}" alt="Image" width="100" /></p>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>{{ data.sentiment_score }}</td>
+            </tr>
+          </tbody>
+        </table>
+        {% else %}
+        <div class="no-results">
+          <p>Results will be displayed here.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
