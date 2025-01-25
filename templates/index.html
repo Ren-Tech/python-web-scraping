@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='styles.css') }}"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .no-bullets {
         list-style-type: none;
@@ -20,7 +21,7 @@
     <div class="main-container">
       <div class="form-container">
         <h1>Simple Web Scraper</h1>
-        <form method="POST">
+        <form method="POST" onsubmit="showLoadingAlert()">
           <div class="input-group">
             <label for="website_url">Website URL:</label>
             <input
@@ -110,5 +111,18 @@
         {% endif %}
       </div>
     </div>
+
+    <script>
+      function showLoadingAlert() {
+        Swal.fire({
+          title: "Scraping in progress...",
+          text: "Please wait while we fetch the data.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+      }
+    </script>
   </body>
 </html>

@@ -170,14 +170,24 @@ a:hover {
   border-radius: 8px;
 }
 
+/* Mobile Responsive Design */
 @media (max-width: 768px) {
   .main-container {
-    grid-template-columns: 1fr;
+    flex-direction: column; /* Stack containers vertically */
+    align-items: center;
   }
 
-  .form-container,
+  .form-container {
+    max-width: 90%; /* Full width with some margin */
+    margin-right: 0; /* Remove right margin */
+    margin-bottom: 20px; /* Add bottom margin between containers */
+    height: auto; /* Allow height to adjust to content */
+  }
+
   .results-container {
-    padding: 20px;
+    max-width: 90%; /* Full width with some margin */
+    max-height: none; /* Remove max-height restriction */
+    width: 100%;
   }
 
   h1 {
@@ -186,5 +196,26 @@ a:hover {
 
   h2 {
     font-size: 22px;
+  }
+
+  .input-group input {
+    width: 88%; /* Full width inputs */
+  }
+}
+
+/* Additional Mobile Adjustments for Smaller Screens */
+@media (max-width: 480px) {
+  .form-container,
+  .results-container {
+    padding: 20px; /* Reduce padding */
+    max-width: 95%; /* Slightly wider */
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  h2 {
+    font-size: 20px;
   }
 }
