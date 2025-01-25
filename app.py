@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
+import os
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -39,8 +40,6 @@ def is_scraping_allowed(url):
         rp = RobotFileParser()
         rp.set_url(robots_url)
         rp.read()
-        
-        # Check if the page allows scraping
         return rp.can_fetch("*", url)
     except Exception:
         return True  # Assume allowed if robots.txt can't be fetched
@@ -49,7 +48,7 @@ def is_scraping_allowed(url):
 def sentiment_analysis(text):
     positive_words = ["good", "excellent", "amazing", "positive", "great", "happy"]
     negative_words = ["bad", "poor", "terrible", "negative", "sad", "worst"]
-    
+
     positive_count = sum(word in text.lower() for word in positive_words)
     negative_count = sum(word in text.lower() for word in negative_words)
 
@@ -76,17 +75,14 @@ def scrape_website(url):
 
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Extract data
         headlines = [h.get_text(strip=True) for h in soup.find_all(['h1', 'h2', 'h3'])]
         paragraphs = [p.get_text(strip=True) for p in soup.find_all('p')]
         links = [a['href'] for a in soup.find_all('a', href=True)]
         images = [img['src'] for img in soup.find_all('img', src=True)]
 
-        # Combine text for sentiment analysis
         all_text = ' '.join(paragraphs + headlines)
         sentiment = sentiment_analysis(all_text)
 
-        # Save data to database
         new_data = ScrapedData(
             url=url,
             headlines='\n'.join(headlines),
@@ -125,4 +121,5 @@ def index():
     return render_template('index.html', data=scraped_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 10000))  # Use Render's provided port
+    app.run(host='0.0.0.0', port=port)
