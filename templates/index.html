@@ -3,37 +3,413 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Web Scraper</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles.css') }}"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Stock Market Dashboard</title>
     <style>
-      .no-bullets {
-        list-style-type: none;
-        padding: 0;
+      * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      .results-container {
+        background: #fff;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        max-height: 500px;
+        overflow-y: auto;
+        flex-grow: 1;
+        height: 100%;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+
+        line-height: 1.6;
+      }
+      .news-section {
+        margin-top: 40px;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      @media (min-width: 768px) {
+        .news-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .news-card {
+        background-color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+      .news-card:hover {
+        transform: translateY(-0.25rem);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .news-image-container {
+        position: relative;
+      }
+      .news-image {
+        width: 100%;
+        height: 12rem;
+        object-fit: cover;
+        background-color: #f8f9fa;
+      }
+      .news-type-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background-color: #3b82f6;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+      }
+      .news-content {
+        padding: 1.5rem;
+      }
+      .news-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .news-publisher {
+        color: #3b82f6;
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+      .news-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+      .news-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .news-link {
+        display: inline-flex;
+        align-items: center;
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      .news-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+      }
+      .news-link svg {
+        width: 1rem;
+        height: 1rem;
+        margin-left: 0.5rem;
+      }
+      .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .form-container {
+        margin-bottom: 30px;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      .trend-bullish {
+        color: #22c55e;
+      }
+      .trend-bearish {
+        color: #ef4444;
+      }
+      .trend-neutral {
+        color: #6b7280;
+      }
+      .price-up {
+        color: #22c55e;
+      }
+      .price-down {
+        color: #ef4444;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f8f9fa;
+      }
+      .error {
+        color: #ef4444;
+        padding: 10px;
+        border: 1px solid #ef4444;
+        border-radius: 4px;
+        margin-top: 20px;
+      }
+      .no-results {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+      }
+      /* News section styles */
+      .news-section {
+        margin-top: 40px;
+      }
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .news-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s;
+      }
+      .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .news-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background-color: #f8f9fa;
+      }
+      .news-content {
+        padding: 15px;
+      }
+      .news-title {
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #1a1a1a;
+      }
+      .news-meta {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 10px;
+      }
+      .news-link {
+        display: inline-block;
+        color: #3b82f6;
+        text-decoration: none;
+        margin-top: 10px;
+      }
+      .news-link:hover {
+        text-decoration: underline;
+      }
+
+      .main-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .dashboard-header {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+      }
+
+      .company-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+
+      .company-name {
+        font-size: 1.8rem;
+        font-weight: 600;
+      }
+
+      .stock-symbol {
+        font-size: 1.2rem;
+        color: #666;
+      }
+
+      .timestamp {
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      .price-container {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+      }
+
+      .current-price {
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+
+      .price-change {
+        font-size: 1.2rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+      }
+
+      .price-up {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .price-down {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .metric-title {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+      }
+
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .trend-bullish {
+        color: #166534;
+        background: #dcfce7;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        display: inline-block;
+      }
+
+      .trend-bearish {
+        color: #991b1b;
+        background: #fee2e2;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        display: inline-block;
+      }
+
+      .trend-neutral {
+        color: #666;
+        background: #f3f4f6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        display: inline-block;
+      }
+
+      .form-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+      }
+
+      .input-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+
+      button {
+        background: #3b82f6;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      button:hover {
+        background: #2563eb;
+      }
+
+      @media (max-width: 768px) {
+        .company-info {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+
+        .metrics-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .current-price {
+          font-size: 2rem;
+        }
       }
     </style>
   </head>
   <body>
     <div class="main-container">
       <div class="form-container">
-        <h1>Simple Web Scraper</h1>
+        <h2>Web Data Scraper</h2>
         <form method="POST" onsubmit="showLoadingAlert()">
           <div class="input-group">
-            <label for="website_url">Website URL:</label>
+            <label for="stock_symbol">Stock Symbol:</label>
             <input
               type="text"
-              id="website_url"
-              name="website_url"
-              placeholder="Enter website URL"
+              id="stock_symbol"
+              name="stock_symbol"
+              placeholder="Enter stock symbol (e.g., AAPL)"
               required
             />
           </div>
           <div class="input-group">
-            <label for="frequency">Frequency (minutes):</label>
+            <label for="frequency">Update Frequency (minutes):</label>
             <input
               type="number"
               id="frequency"
@@ -43,80 +419,134 @@
               required
             />
           </div>
-          <button type="submit">Scrape</button>
+          <button type="submit">Fetch Data</button>
         </form>
       </div>
 
-      <div class="results-container">
-        {% if data %}
-        <h2>Scraped Data</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>URL</th>
-              <th>Headlines</th>
-              <th>Paragraphs</th>
-              <th>Links</th>
-              <th>Images</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <a href="{{ data.url }}" target="_blank">
-                  {{ data.url.split('//')[-1].split('/')[0] }}
-                </a>
-              </td>
-              <td>
-                <div class="no-bullets">
-                  {% for headline in data.headlines %}
-                  <p>{{ headline }}</p>
-                  {% endfor %}
-                </div>
-              </td>
-              <td>
-                <div class="no-bullets">
-                  {% for paragraph in data.paragraphs %}
-                  <p>{{ paragraph }}</p>
-                  {% endfor %}
-                </div>
-              </td>
-              <td>
-                <div class="no-bullets">
-                  {% for link in data.links %}
-                  <p>
-                    <a href="{{ link }}" target="_blank">
-                      {{ link.split('//')[-1].split('/')[0] }}
-                    </a>
-                  </p>
-                  {% endfor %}
-                </div>
-              </td>
-              <td>
-                <div class="no-bullets">
-                  {% for img in data.images %}
-                  <p><img src="{{ img }}" alt="Image" width="100" /></p>
-                  {% endfor %}
-                </div>
-              </td>
-              <td>{{ data.sentiment_score }}</td>
-            </tr>
-          </tbody>
-        </table>
-        {% else %}
-        <div class="no-results">
-          <p>Results will be displayed here.</p>
+      {% if data %}
+      <div class="dashboard-header">
+        <div class="company-info">
+          <div>
+            <h1 class="company-name">{{ data.company_name }}</h1>
+            <span class="stock-symbol">{{ data.symbol }}</span>
+          </div>
+          <span class="timestamp"
+            >Last Updated: {{ data.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            }}</span
+          >
+        </div>
+        <div class="price-container">
+          <span class="current-price">${{ "%.2f"|format(data.price) }}</span>
+          <span
+            class="price-change {{ 'price-up' if data.change > 0 else 'price-down' }}"
+          >
+            {{ "+" if data.change > 0 else "" }}{{ "%.2f"|format(data.change) }}
+            ({{ "%.2f"|format(data.change_percent) }}%)
+          </span>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">Previous Close</div>
+          <div class="metric-value">
+            ${{ "%.2f"|format(data.previous_close) }}
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Day Range</div>
+          <div class="metric-value">
+            ${{ "%.2f"|format(data.low) }} - ${{ "%.2f"|format(data.high) }}
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Volume</div>
+          <div class="metric-value">{{ '{:,}'.format(data.volume) }}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Market Cap</div>
+          <div class="metric-value">
+            ${{ '{:,.2f}'.format(data.market_cap/1000000000) }}B
+          </div>
+        </div>
+        {% if data.pe_ratio %}
+        <div class="metric-card">
+          <div class="metric-title">P/E Ratio</div>
+          <div class="metric-value">{{ "%.2f"|format(data.pe_ratio) }}</div>
+        </div>
+        {% endif %} {% if data.dividend_yield %}
+        <div class="metric-card">
+          <div class="metric-title">Dividend Yield</div>
+          <div class="metric-value">
+            {{ "%.2f"|format(data.dividend_yield * 100) }}%
+          </div>
         </div>
         {% endif %}
+        <div class="metric-card">
+          <div class="metric-title">50-Day Average</div>
+          <div class="metric-value">
+            ${{ "%.2f"|format(data.fifty_day_avg) }}
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">200-Day Average</div>
+          <div class="metric-value">
+            ${{ "%.2f"|format(data.two_hundred_day_avg) }}
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Market Trend</div>
+          <div class="metric-value">
+            <span class="trend-{{ data.trend.lower() }}">{{ data.trend }}</span>
+          </div>
+        </div>
       </div>
+      {% endif %} {% if data and data.news %}
+      <div class="news-section">
+        <h2>Latest News for {{ data.company_name }}</h2>
+        <div class="news-grid">
+          {% for article in data.news %}
+          <article class="news-card">
+            <div class="news-image-container">
+              <img
+                src="{{ article.thumbnail if article.thumbnail else '/api/placeholder/800/450' }}"
+                alt="{{ article.title }}"
+                class="news-image"
+              />
+              <span class="news-type-badge"
+                >{{ article.type if article.type else 'News' }}</span
+              >
+            </div>
+            <div class="news-content">
+              <div class="news-meta">
+                <span class="news-publisher">{{ article.publisher }}</span>
+                <span class="news-date"
+                  >{{ article.published.strftime('%b %d, %Y') }}</span
+                >
+              </div>
+              <h3 class="news-title">{{ article.title }}</h3>
+              <a
+                href="{{ article.link }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="news-link"
+              >
+                Read More
+              </a>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       function showLoadingAlert() {
         Swal.fire({
-          title: "Scraping in progress...",
-          text: "Please wait while we fetch the data.",
+          title: "Fetching stock data...",
+          text: "Please wait while we retrieve the latest market information.",
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
