@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 app = Flask(__name__)
 
 # Set up the SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///stock_data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqli:///stock_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
